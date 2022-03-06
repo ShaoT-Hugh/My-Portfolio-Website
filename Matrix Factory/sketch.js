@@ -392,7 +392,7 @@ class SceneManager {
         showCountdown(128, 182, 28); // show countdown
         this.toolMasks[shared.playerAmount - shared.round].changeTarget(0, 22); // enable the tool panel mask
         if(partyIsHost()) { // return to state 1
-          ishared.gameState --;
+          shared.gameState --;
         }
       } else if(state > 2) {
         // show the dark background
