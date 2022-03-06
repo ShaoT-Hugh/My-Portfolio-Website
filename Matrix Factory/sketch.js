@@ -613,12 +613,12 @@ function keyPressed() {
           command = 'null';
       }
       // *This is a developer feature which should be removed in published version*
-      if(keyCode === TAB) shared.pauseToggle = !shared.pauseToggle;
+      if(keyCode === 50) shared.pauseToggle = !shared.pauseToggle;
       else if(keyCode === SHIFT) count.countdown += 15;
     }
     updateTool(me, command); // update the position of the tool
   }
-  if(keyCode === CONTROL) saveCanvas('ScreenShot');
+  if(keyCode === 49) saveCanvas('ScreenShot');
 }
 
 // *** game objects manipulation ***
