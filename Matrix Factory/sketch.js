@@ -24,6 +24,7 @@ const Grid = {x: 50, y: 50, row: 8, col: 8, inter: 32};
 const singlePartSize = 32;
 
 const countDownTime = 20; // basic countdown time
+const defaultRemainCut = 4; // default remain cuts
 
 // game data
 var GAME_DATA; // json file of default component data
@@ -200,7 +201,7 @@ class SceneManager {
       sceneManager.tutorialPage = min(sceneManager.tutorialPage + 1, tutorialTexts.length - 1);
     }, assets.get('button_forth'), {offsetX: 60, offsetY: 60});
     // sound play check
-    this.soundCheck = [false, false, false]; // start, end, stamp over
+    this.soundCheck = [false, false, false]; // start, switch, end, stamp over
   }
   // initialize canvas arries
   initializeCanvas() {
@@ -336,6 +337,7 @@ class SceneManager {
     pop();
 
     if(shared.isRunning && me.isPlaying) { // if the game is running && player is playing
+      // enable the tool panel mask
       // initialize the canvas and stop the title music
       if(this.teamTools.length < 1) {
         this.initializeCanvas();
@@ -385,6 +387,12 @@ class SceneManager {
           assets.get('start_bell').play();
           assets.get('play_music').loop(); // start the playing music
           this.soundCheck[0] = true;
+        }
+      } else if(state === 2) { // state 2: switch phase
+        showCountdown(128, 182, 28); // show countdown
+        this.toolMasks[shared.playerAmount - shared.round].changeTarget(0, 22); // enable the tool panel mask
+        if(partyIsHost()) { // return to state 1
+          ishared.gameState --;
         }
       } else if(state > 2) {
         // show the dark background
@@ -488,7 +496,7 @@ class SceneManager {
       shared.playerTools.push(participants[p].tool);
       participants[p].toolPos = {x: 0, y: 0, pos: []}; // reset posInfo of the tool
       initializeTool(participants[p]); // initialize the tool
-      participants[p].remainCut = 3; // reset remain cut chance
+      participants[p].remainCut = defaultRemainCut; // reset remain cut chance
 
       // distribute components
       components.initComps.push({comp: {}, posInfo: []});
@@ -536,13 +544,13 @@ class SceneManager {
       for(var p of participants) {
         if(p.isPlaying) {
           p.enabled = true; // enable all the players
-          p.remainCut = 3; // recharge remaining cut chance
+          p.remainCut = defaultRemainCut; // recharge remaining cut chance
         }
       }
       count.countdown = countDownTime + (shared.playerAmount - shared.round) * 5; // reset the countdown
       assets.get('gear_spin').play();
+      shared.gameState ++;
     }
-    this.toolMasks[shared.playerAmount - shared.round].changeTarget(0, 22); // enable the tool panel mask
     shared.round ++;
   }
 }
@@ -612,13 +620,13 @@ function keyPressed() {
         default:
           command = 'null';
       }
-      // *This is a developer feature which should be removed in published version*
-      if(keyCode === 50) shared.pauseToggle = !shared.pauseToggle;
-      else if(keyCode === SHIFT) count.countdown += 15;
     }
     updateTool(me, command); // update the position of the tool
   }
-  if(keyCode === 49) saveCanvas('ScreenShot');
+  // *This is a developer feature which should be removed in published version*
+  if(keyCode === 50) shared.pauseToggle = !shared.pauseToggle;
+  else if(keyCode === SHIFT) count.countdown += 15;
+  else if(keyCode === 49) saveCanvas('ScreenShot');
 }
 
 // *** game objects manipulation ***
@@ -930,6 +938,7 @@ class sprite {
   draw(canv) {
     let canvas = this.canvas;
     canvas.push();
+    canvas.clear();
     canvas.fill(180);
     canvas.imageMode(CORNER);
     canvas.textAlign(CENTER);
