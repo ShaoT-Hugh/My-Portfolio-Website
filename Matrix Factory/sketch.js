@@ -390,7 +390,7 @@ class SceneManager {
         }
       } else if(state === 2) { // state 2: switch phase
         showCountdown(128, 182, 28); // show countdown
-        this.toolMasks[shared.playerAmount - shared.round].changeTarget(0, 22); // enable the tool panel mask
+        this.toolMasks[shared.playerAmount + 1 - shared.round].changeTarget(0, 22); // enable the tool panel mask
         if(partyIsHost()) { // return to state 1
           shared.gameState --;
         }
@@ -538,6 +538,7 @@ class SceneManager {
       let newCompId = (player.curCompId + 1) % shared.playerAmount;
       if(newCompId !== player.curCompId) player.curCompId = newCompId;
     })
+    shared.round ++;
     if(me.curCompId == me.initCompId) { // if it's already the last round, end the game
       this.endGame();
     } else {
@@ -551,7 +552,6 @@ class SceneManager {
       assets.get('gear_spin').play();
       shared.gameState ++;
     }
-    shared.round ++;
   }
 }
 
