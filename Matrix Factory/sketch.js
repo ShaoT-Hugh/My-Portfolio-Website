@@ -121,7 +121,7 @@ function setup() {
     components.initComps = []; // initComps are components distributed to the players to be modified
     components.targetComps = []; // targetComps are final target result of the components
 
-    shared.gameState = 0; // mark the current game state
+    shared.gameState = -1; // mark the current game state
     shared.round = 0; // mark the current round
     shared.gameResult = []; // record the game result
     shared.playerAmount = 1;
@@ -147,6 +147,9 @@ function setup() {
   me.isPlaying = false; // if the player is playing
   me.enabled = false; // if the control is enabled
 
+  // register global events
+  partySubscribe("canvasManipulate", sceneManager.canvasManipulate); // manipulate canvas functions
+  partySubscribe("playSoundEffect", sceneManager.playSoundEffect); // play certain sound effects
   // start playing the title music
   assets.get('title_music').loop();
 }
@@ -200,10 +203,10 @@ class SceneManager {
     this.forthButton = new cusButton(454, 302, 50, 44, function(){
       sceneManager.tutorialPage = min(sceneManager.tutorialPage + 1, tutorialTexts.length - 1);
     }, assets.get('button_forth'), {offsetX: 60, offsetY: 60});
-    // sound play check
-    this.soundCheck = [false, false, false]; // start, switch, end, stamp over
   }
-  // initialize canvas arries
+
+  // *canvas manipulation functions*
+  // initialize canvases
   initializeCanvas() {
     let amount = shared.playerAmount;
     let interTools = 20, widthTools = 94, heightTools = 116, interResult = 30, sizeResult = 112;
@@ -214,23 +217,25 @@ class SceneManager {
       this.teamTools.push(new sprite(xTools, -20-heightTools, xTools, 0, widthTools, heightTools, assets.get('tool_panel')));
       this.toolMasks.push(new dynamicImage(0, -20-widthTools, 0, -20-widthTools, assets.get('tool_panelMask')));
       let xResult = originXResult + i * (interResult + sizeResult);
+      // initialize result canvas
       this.targetCompCanvas.push(new sprite(xResult, -20-sizeResult, xResult, 100, sizeResult, sizeResult, assets.get('result_panel')));
       this.curCompCanvas.push(new sprite(xResult, HEIGHT, xResult, 280, sizeResult, sizeResult, assets.get('result_panel')));
     }
+    this.tutorialButton.enable(); // disable the tutorial button on the title screen
   }
-  // reset canvas arries
+  // reset canvases values
   resetCanvas() {
     this.operateTable.reset();
     this.targetCanvas.reset();
     this.teamTools = [];
+    this.toolMasks = [];
     this.targetCompCanvas = [];
     this.curCompCanvas = [];
     this.resultStamps = [];
     this.tutorialPage = 0;
-    this.soundCheck = [false, false, false];
     me.isReady = false;
   }
-  // return all the canvas
+  // return all the canvases to the beginning position
   returnCanvas() {
     this.operateTable.return();
     this.targetCanvas.return();
@@ -263,23 +268,74 @@ class SceneManager {
     }
   }
   // show all the canvas
-  showCanvas() {
+  showCanvas() { // show in-game canvas
     this.operateTable.show();
     this.targetCanvas.show();
     this.teamTools.forEach(can => can.show());
   }
-  showUpCanvas() {
+  showUpCanvas() { // show result canvas
     this.targetCompCanvas.forEach(can => can.show());
     this.curCompCanvas.forEach(can => can.show());
   }
-  showStamps() {
+  showStamps() { // show the results
     for(let stp in this.resultStamps) {
       this.resultStamps[stp].update();
       this.resultStamps[stp].show(this.curCompCanvas[stp].canvas);
     }
   }
+  // ****************************************************************
 
-  // check if all the players are ready to play
+  // **Following functions are especially for listening to partyEmit()**
+  canvasManipulate(command) {
+    switch(command) {
+      case "init":
+        sceneManager.initializeCanvas(); // initialize all the canvas
+        sceneManager.tutorialButton.enable(); // disable the tutorial button
+        break;
+      case "pass":
+        sceneManager.toolMasks[shared.playerAmount + 1 - shared.round].changeTarget(0, 22); // drop down the tool panel mask
+        assets.get('gear_spin').play(); // play the gear spinning sound
+        break;
+      case "return":
+        sceneManager.returnCanvas();
+        break;
+      case "reset":
+        sceneManager.resetCanvas();
+        break;
+    }
+  }
+  playSoundEffect(command) {
+    switch(command) {
+      case "init": // prepare the game
+        assets.get('title_music').stop(); // stop the title music
+        assets.get('gear_spin').play(); // play the gear spinning sound
+        break;
+      case "start": // start playing game music
+        assets.get('start_bell').play();
+        assets.get('play_music').loop(); // loop the game music
+        break;
+      case "pass":
+        assets.get('gear_spin').play(); // play the gear spinning sound
+        break;
+      case "end": // play the end bell
+        assets.get('end_bell').play();
+        assets.get('gear_spin').play();
+        assets.get('play_music').stop(); // stop the play music
+        break;
+      case "stamp":
+        assets.get('stamp').play(); // play the stamp sound
+        break;
+      case "return":
+        assets.get('gear_spin').play(); // play the gear spinning sound
+        assets.get('button_click1').play(); // play the click sound 1
+        break;
+      case "reset": // replay the title music
+        assets.get('title_music').loop();
+        break;
+    }
+  }
+
+  // check if all the players are ready to start the game
   checkReady() {
     let result = true;
     for(var p of participants) if(!p.isReady) result = false;
@@ -290,9 +346,8 @@ class SceneManager {
     this.tutorialButton.trigger();
     this.backButton.trigger();
     this.forthButton.trigger();
-    return false;
   }
-  // tutorial
+  // render the tutorial
   tutorialRender() {
     if(this.tutorialToggle) {
       let canvas = this.tutorialCanvas;
@@ -327,6 +382,8 @@ class SceneManager {
       pop();
     }
   }
+
+  // **core game update function**
   // check what to present according to the current game state
   gameUpdate() {
     // always show the background images
@@ -337,13 +394,6 @@ class SceneManager {
     pop();
 
     if(shared.isRunning && me.isPlaying) { // if the game is running && player is playing
-      // enable the tool panel mask
-      // initialize the canvas and stop the title music
-      if(this.teamTools.length < 1) {
-        this.initializeCanvas();
-        assets.get('title_music').stop();
-        assets.get('gear_spin').play();
-      }
       // update all the canvas
       this.updateCanvas();
       // draw game objects on the canvas
@@ -369,11 +419,12 @@ class SceneManager {
         showText(count.countdown, {x: WIDTH/2, y: 60}, 40, color(0), {col: color(255), weight: 2}); // show the game start countdown
         if(partyIsHost()) {
           if(frameCount % 60 === FRAME_count) count.countdown --; // game start countdown
-          if(count.countdown <= 0) {
+          if(count.countdown <= 0) { // if countdown equals 0, start the game
             for(var p of participants) p.enabled = true;
             count.countdown = countDownTime + (shared.playerAmount - shared.round) * 5;
             shared.round ++;
             shared.gameState ++;
+            partyEmit("playSoundEffect", "start"); // start playing game musci
           }
         }
       } else if(state === 1) { // state 1: game play
@@ -383,14 +434,8 @@ class SceneManager {
         }
         showCountdown(128, 182, 28); // show countdown
         showText('Remaining Cut Chance: ' + me.remainCut, {x: 130, y: HEIGHT - 30}, 14, color(255)); // show remaining cut chance
-        if(!this.soundCheck[0]) { // play the start bell
-          assets.get('start_bell').play();
-          assets.get('play_music').loop(); // start the playing music
-          this.soundCheck[0] = true;
-        }
       } else if(state === 2) { // state 2: switch phase
         showCountdown(128, 182, 28); // show countdown
-        this.toolMasks[shared.playerAmount + 1 - shared.round].changeTarget(0, 22); // enable the tool panel mask
         if(partyIsHost()) { // return to state 1
           shared.gameState --;
         }
@@ -413,17 +458,14 @@ class SceneManager {
               this.curCompCanvas[r].canvas.width/2, this.curCompCanvas[r].canvas.height/2, 3, shared.gameResult[r]
             ));
           }
-          if(!this.soundCheck[1]) { // play the end bell
-            assets.get('end_bell').play();
-            assets.get('gear_spin').play();
-            assets.get('play_music').stop(); // stop the playing music
-            this.soundCheck[1] = true;
-          }
         }
         if(state > 3) {
           this.showStamps(); // enable the stamps
           if(state === 4) { // state 4: load stamps
-            if(partyIsHost() && this.checkStampReady()) shared.gameState ++;
+            if(partyIsHost() && this.checkStampReady()) {
+              shared.gameState ++;
+              partyEmit("playSoundEffect", "stamp"); // if the stamp is ready, play the stamp sound
+            }
           }
           if(state === 5) { // state 5: result page, waiting for restart
             if(partyIsHost()) {
@@ -431,16 +473,15 @@ class SceneManager {
             } else {
               showBlinkText("Wait for the the Host to End", {x: width/2, y: height - 230}, 26, color(220));
             }
-            if(this.checkStampReady() && !this.soundCheck[2]) { // play the stamp sound
-              assets.get('stamp').play();
-              this.soundCheck[2] = true;
-            }
           }
-          if(state === 6) {
-            if(partyIsHost() && this.checkCanvasReady()) {
+          if(state === 6) { // state 6: resetting the canvases
+            if(partyIsHost() && this.checkCanvasReady()) { // once the canvases have been returned, back to the title scene
               shared.isRunning = false;
               for(var p of participants) p.isPlaying = false;
-            } else if(this.checkCanvasReady()) this.returnCanvas();
+              // reset the canvas and replay the title music
+              partyEmit("canvasManipulate", "reset");
+              partyEmit("playSoundEffect", "reset");
+            }
           }
         }
         // show the result canvas
@@ -455,11 +496,6 @@ class SceneManager {
       this.tutorialButton.render();
     } else { // if the game is not running
       showText("MATRIX FACTORY", {x: width/2, y: 80}, 40, color(0), {col: color(255), weight: 4}); // show the title
-      // reset the canvas and replay the title music
-      if(this.teamTools.length > 0) {
-        this.resetCanvas();
-        assets.get('title_music').loop();
-      }
       // show the title scene
       if(partyIsHost()) {
         showBlinkText("Click the Screen to start", {x: width/2, y: height - 230}, 26, color(220));
@@ -474,6 +510,7 @@ class SceneManager {
     }
   }
 
+  // *game process control functions*
   // start the game (global)
   startGame() {
     FRAME_count = frameCount % 60; // record current frameCount step
@@ -511,11 +548,16 @@ class SceneManager {
     }
     count.countdown = 3;
 
-    shared.gameState = 0; // reset the game state
+    shared.gameState = 0; // reset the game state to 0
     shared.round = 0; // reset the round to 0
     shared.playerAmount = participants.length; // roecord player number of this round of play
     shared.isRunning = true; // game start running
+
+    // game initialization
+    partyEmit("canvasManipulate", "init"); // initialize the game
+    partyEmit("playSoundEffect", "init");
   }
+
   // end the game (global)
   endGame() {
     // disable all the players
@@ -529,9 +571,12 @@ class SceneManager {
       else if(checkOverlap(targetShape, curShape, false)) shared.gameResult.push(true);
       else shared.gameResult.push(false);
     });
+    // play the end bell
+    partyEmit("playSoundEffect", "end");
     // update game state
     shared.gameState += 2;
   }
+
   // deliver the component to next player (global)
   deliver() {
     participants.forEach(function(player) {
@@ -539,6 +584,8 @@ class SceneManager {
       if(newCompId !== player.curCompId) player.curCompId = newCompId;
     })
     shared.round ++;
+    partyEmit("canvasManipulate", "pass"); // drop down the tool panel mask
+    partyEmit("playSoundEffect", "pass"); // play gear spinning sound
     if(me.curCompId == me.initCompId) { // if it's already the last round, end the game
       this.endGame();
     } else {
@@ -555,11 +602,12 @@ class SceneManager {
   }
 }
 
-// *** player behavior ***
-// watch player's input key
+// *** player behaviors ***
+// when the player clicks the mouse
 function mouseClicked() { // click the canvas to start game
   isMousePressed = true;
-  if(!sceneManager.buttonTrigger() && !shared.isRunning && inCanvas(mouseX, mouseY) && !sceneManager.tutorialToggle) {
+  sceneManager.buttonTrigger(); // attempt to trigger all the buttons
+  if(!shared.isRunning && inCanvas(mouseX, mouseY) && !sceneManager.tutorialToggle) {
       if(partyIsHost()) {
         me.isReady = true; // make the host ready
         if(sceneManager.checkReady()) sceneManager.startGame();
@@ -570,18 +618,18 @@ function mouseClicked() { // click the canvas to start game
             clearTimeout(sceneManager.alertTimer);
           }, 1500);
         }
-        assets.get('button_click1').play(); // play the click sound
+        assets.get('button_click1').play(); // play the lick sound 1
       }
-      else if(!sceneManager.buttonTrigger() && !me.isPlaying && !sceneManager.tutorialToggle) {
+      else if(!me.isPlaying && !sceneManager.tutorialToggle) {
         me.isReady = !me.isReady;
-        assets.get('button_click2').play(); // play the click sound
+        assets.get('button_click2').play(); // play the click sound 2
       }
   } else {
     if(shared.gameState === 5) { // back to title scene
       if(partyIsHost()) {
-        sceneManager.returnCanvas();
+        partyEmit("canvasManipulate", "return"); // return the canvases
+        partyEmit("playSoundEffect", "return"); // play the click and gear sound
         shared.gameState ++;
-        assets.get('button_click2').play(); // play the sound
       }
     }
   }
@@ -589,6 +637,7 @@ function mouseClicked() { // click the canvas to start game
 function mouseReleased() {
   isMousePressed = false;
 }
+// watch player's input key
 function keyPressed() {
   if(me.enabled) {
     let command = '';
@@ -628,6 +677,7 @@ function keyPressed() {
   else if(keyCode === SHIFT) count.countdown += 15;
   else if(keyCode === 49) saveCanvas('ScreenShot');
 }
+// ****************************************************************
 
 // *** game objects manipulation ***
 function initializeComponent(component) {
@@ -1023,7 +1073,7 @@ class cusButton { // (x position, y position, width, height, event listener, but
     this.text_color = option.text_col || 255;
     this.text_size = option.text_size || 22;
     this.enabled = option.default || false; // if the button is enabled
-    // this.pressed = false;
+    this.pressed = false;
   }
 
   // enable or disable
@@ -1043,8 +1093,8 @@ class cusButton { // (x position, y position, width, height, event listener, but
   // trigger the button
   trigger(){
     if(this.enabled && this.ifMouseOn()) {
-      // if(!this.pressed) this.pressed = true;
-      // else this.pressed = false;
+      if(!this.pressed) this.pressed = true;
+      else this.pressed = false;
       assets.get('button_click2').play(); // play the button clicked sound
       this.func();
     }
@@ -1063,6 +1113,7 @@ class cusButton { // (x position, y position, width, height, event listener, but
       canvas.image(this.imgs[0], x, y);
       canvas.text(this.text, x + w/2, y + h/2 + 8);
     }else{
+      this.pressed = false;
       canvas.image(this.imgs[1], x + 2, y + 2);
       canvas.text(this.text, x + w/2, y + h/2 + 10);
     }
