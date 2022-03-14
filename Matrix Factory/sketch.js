@@ -234,7 +234,6 @@ class SceneManager {
     this.curCompCanvas = [];
     this.resultStamps = [];
     this.tutorialPage = 0;
-    me.isReady = false;
   }
   // return all the canvases to the beginning position
   returnCanvas() {
@@ -477,11 +476,14 @@ class SceneManager {
           }
           if(state === 6) { // state 6: resetting the canvases
             if(partyIsHost() && this.checkCanvasReady()) { // once the canvases have been returned, back to the title scene
-              shared.isRunning = false;
-              for(var p of participants) p.isPlaying = false;
+              for(var p of participants) {
+                p.isPlaying = false;
+                p.isReady = false;
+              }
               // reset the canvas and replay the title music
               partyEmit("canvasManipulate", "reset");
               partyEmit("playSoundEffect", "reset");
+              shared.isRunning = false;
             }
           }
         }
