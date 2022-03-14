@@ -181,6 +181,7 @@ class SceneManager {
     // alert text
     this.alertToggle = false;
     this.alertTimer = 0;
+    this.asyncTimer = 0; // this timer is to fix the async between shared obj and partyEmit()
     
     this.backgroundImage = assets.get('background_image'); // background image
     this.titleImage = assets.get('title_image'); // title image (array)
@@ -550,12 +551,15 @@ class SceneManager {
 
     shared.gameState = 0; // reset the game state to 0
     shared.round = 0; // reset the round to 0
-    shared.playerAmount = participants.length; // roecord player number of this round of play
-    shared.isRunning = true; // game start running
-
+    shared.playerAmount = participants.length; // record player number of this round of play
+    
     // game initialization
-    partyEmit("canvasManipulate", "init"); // initialize the game
-    partyEmit("playSoundEffect", "init");
+    this.asyncTimer = setTimeout(function() {
+      partyEmit("canvasManipulate", "init"); // initialize the game
+      partyEmit("playSoundEffect", "init");
+      shared.isRunning = true; // game start running
+      clearTimeout(sceneManager.asyncTimer);
+    }, 100);
   }
 
   // end the game (global)
@@ -583,9 +587,13 @@ class SceneManager {
       let newCompId = (player.curCompId + 1) % shared.playerAmount;
       if(newCompId !== player.curCompId) player.curCompId = newCompId;
     })
-    shared.round ++;
-    partyEmit("canvasManipulate", "pass"); // drop down the tool panel mask
-    partyEmit("playSoundEffect", "pass"); // play gear spinning sound
+    shared.round ++; // add to the round
+    // drop down the tool panel mask
+    this.asyncTimer = setTimeout(function() {
+      partyEmit("canvasManipulate", "pass"); // drop down the tool panel mask
+      partyEmit("playSoundEffect", "pass"); // play gear spinning sound
+      clearTimeout(sceneManager.asyncTimer);
+    }, 100);
     if(me.curCompId == me.initCompId) { // if it's already the last round, end the game
       this.endGame();
     } else {
