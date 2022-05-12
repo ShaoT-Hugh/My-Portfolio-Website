@@ -1,0 +1,122 @@
+[
+  {
+    "text": [
+      "It's 3015, you are an employee of a technical company.",
+      "As other technical workers, you have a handsome income, however, at cost of most energy and time invested in the work.",
+      "You hardly have contact with your family, let alone any friend. All these years, you have been living alone."
+    ],
+    "choices": null
+  },
+  {
+    "text": [
+      "Today, you just received another promotion, accompanied by an extra bonus.",
+      "However, even though you want to share your joy, no one is there listening to you. What you could feel is just a great sense of loss.",
+      "\"I want a companion - not workmate, just someone who could be with me in my daily life. Right. I don't want to be alone anymore.\"",
+      "\"It doesn't matter I have no friend now. I can MAKE one.\""
+    ],
+    "choices": null
+  },
+  {
+    "text": [
+      "You make up your mind and come to the robot shop in the neighborhood.",
+      "You tell the clerk that you want to customize a robot.",
+      "\"You can personally select each body part of your robot here. When you finish, according to your choices, our system will automatically match the most suitable personality module for the robot. You may decide whether to accept then.\"",
+      "\"So the system will generate the most suitable character of the robot for me? Sounds interesting!\" You can't wait to start."
+    ],
+    "choices": null
+  },
+  {
+    "text": [
+      "Step 1 - Let's start from the head of the robot. Choose a head for it."
+    ],
+    "choices": [
+      "Regular robot head",
+      "Spherical head",
+      "Human-like head",
+      "Ironman head"
+    ],
+    "scores": ["A", "D", "AC", "BC"]
+  },
+  {
+    "text": [
+      "Step 2 - What kind of eyes you want the robot to have?"
+    ],
+    "choices": [
+      "Beautiful big eyes",
+      "Cool Laser eyes",
+      "Panoramic camera",
+      "Single huge eye"
+    ],
+    "scores": ["AC", "B", "AC", "BCD"]
+  },
+  {
+    "text": [
+      "Step 3 - Next is the robot arm. This will influence how your robot friend interact with you and environment."
+    ],
+    "choices": [
+      "Normal human arm and hand with 5 fingers",
+      "Telescoping tentacle arm",
+      "Deformable arm and hand like a Swiss army knife",
+      "Special slime hand that can absorb evey material"
+    ],
+    "scores": ["D", "A", "B", "BC"]
+  },
+  {
+    "text": [
+      "Step 4 - Here comes to the lower body. In what way you expect your friend to \"walk\" around?"
+    ],
+    "choices": [
+      "Human legs",
+      "Allterrian tracks",
+      "Suspension device enabling it to float in the air",
+      "A Spring allowing it to jump around"
+    ],
+    "scores": ["A", "AD", "B", "BCD"]
+  },
+  {
+    "text": [
+      "Step 5 - This is the last step. You are given a special offer - you can choose one of the additional functions below to install on your robot for free. Which one do you prefer?"
+    ],
+    "choices": [
+      "Transform into a bench",
+      "Produce toilet paper anytime you need",
+      "Pour beverage from the mouth like a drink machine",
+      "Be able to understand all your cold jokes"
+    ],
+    "scores": ["A", "AD", "B", "CD"]
+  },
+  {
+    "text": [
+      "Congratulations! You finished it. Now you can check the special result we generated for you."
+    ],
+    "choices": null
+  },
+  {
+    "image": "Andrew",
+    "text": [
+      "Honest, loyal and considerate. Andrew is undoubtedly a reliable assistant as well as a supportive friend to you. No matter what joy you want to share or what complaint you want to let out, he is always sitting there, patiently listening to you as an old friend. If you are seeking someone that you can always rely on, Andrew will be your best backer."
+    ],
+    "choices": null
+  },
+  {
+    "image": "Doraemon",
+    "text": [
+      "With its great potential to be supportive in all aspects, Doraemon now is your only personal advisor. Be ready to get surprised by his incredible novel ideas and knowledge. Don't hesitate to break out of the ruts in all kinds of unexpected ways. Doraemon is the best companion who can always arouse your creativity and fulfill your endless curiousity."
+    ],
+    "choices": null
+  },
+  {
+    "image": "Sonny",
+    "text": [
+      "Sonny, as a freak individual among robots, has some similar characteristics as you. He has questions about his presence and the relationship with other beings. He may look like a maverick, but always try to understand others. Don't worry about being different from others because you are not alone. Sonny will accompany you to exploit your shining points together."
+    ],
+    "choices": null
+  },
+  {
+    "image": "WallE",
+    "text": [
+      "Ambitious, brave and innocent. WALL-E is such a little adorable companion. He may behave clumsily sometimes, but always for a positive intention. Every time you feel depressed, annoyed or deserted, WALL-E can always become your spiritual comfort and help you laugh out again. Just remember keep him company - he will be upset if you leave him alone too often."
+    ],
+    "choices": null
+  }
+]
