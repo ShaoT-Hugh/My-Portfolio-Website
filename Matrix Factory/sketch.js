@@ -148,7 +148,7 @@ function setup() {
   me.enabled = false; // if the control is enabled
 
   // register global events
-  partySubscribe("canvasManipulate", sceneManager.canvasManipulate); // manipulate canvas functions
+  partySubscribe("canvasManipulate", sceneManager.canvasManipulate.bind(sceneManager)); // manipulate canvas functions
   partySubscribe("playSoundEffect", sceneManager.playSoundEffect); // play certain sound effects
   // start playing the title music
   assets.get('title_music').loop();
@@ -289,18 +289,18 @@ class SceneManager {
   canvasManipulate(command) {
     switch(command) {
       case "init":
-        sceneManager.initializeCanvas(); // initialize all the canvas
-        sceneManager.tutorialButton.enable(); // disable the tutorial button
+        this.initializeCanvas(); // initialize all the canvas
+        this.tutorialButton.enable(); // disable the tutorial button
         break;
       case "pass":
-        sceneManager.toolMasks[shared.playerAmount + 1 - shared.round].changeTarget(0, 22); // drop down the tool panel mask
+        this.toolMasks[shared.playerAmount + 1 - shared.round].changeTarget(0, 22); // drop down the tool panel mask
         assets.get('gear_spin').play(); // play the gear spinning sound
         break;
       case "return":
-        sceneManager.returnCanvas();
+        this.returnCanvas();
         break;
       case "reset":
-        sceneManager.resetCanvas();
+        this.resetCanvas();
         break;
     }
   }
