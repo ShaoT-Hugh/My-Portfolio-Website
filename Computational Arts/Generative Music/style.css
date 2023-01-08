@@ -1,0 +1,22 @@
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 2em;
+  display: flex;
+  overflow: hidden;
+
+  /* This centers our sketch horizontally. */
+  justify-content: center;
+
+  /* This centers our sketch vertically. */
+  align-items: center;
+
+  background-color: black;
+}
+
+canvas {
+  display: block;
+}

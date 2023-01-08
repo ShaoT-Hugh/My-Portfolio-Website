@@ -1,0 +1,9 @@
+body {
+    background-color: black;
+}
+
+/* Scale canvas with resize attribute to full size */
+canvas {
+    width: 100vw;
+    height: 100vh;
+}
