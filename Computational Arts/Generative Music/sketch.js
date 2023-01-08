@@ -1,7 +1,7 @@
 // require https://unpkg.com/tone
 // require https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.js
 
-var drum, endTime = 0;
+var drum, endTime = 0, ifStart = false;
 
 const synth = new Tone.Synth({
   oscillator: {
@@ -138,30 +138,42 @@ function setup() {
   
   notes = Dorian; // set up the chord
   
-  endTime = registerNewMelody(generate());
-  Tone.Transport.start();
-  
+  textSize(48);
+  textAlign(CENTER);
 }
 
 function draw() {
   background(0);
   
-  // loop the melody
-  if(Tone.now() >= endTime) {
-    endTime = registerNewMelody(generate());
-    // console.log('Next Measure');
-  }
-  // update scores
-  for(let [index, rect] of rects.entries()) {
-    if(rect.x > -100) {
-      rect.update();
-      rect.draw();
-    } else rects.splice(index, 1);
+  if(ifStart) {
+    // loop the melody
+    if(Tone.now() >= endTime) {
+      endTime = registerNewMelody(generate());
+      // console.log('Next Measure');
+    }
+    // update scores
+    for(let [index, rect] of rects.entries()) {
+      if(rect.x > -100) {
+        rect.update();
+        rect.draw();
+      } else rects.splice(index, 1);
+    }
+  } else {
+    push();
+    fill(255);
+    text("Click to play a random tune", 400, 300);
+    pop();
   }
 }
 
-function mousePressed() {
-  
+function mouseClicked() {
+  // click the screen to start
+  if(!ifStart) {
+    ifStart = true;
+
+    endTime = registerNewMelody(generate());
+    Tone.Transport.start();
+  }
 }
 
 class Note {
